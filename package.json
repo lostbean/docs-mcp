@@ -1,0 +1,36 @@
+{
+  "name": "@buger/probe-docs-mcp",
+  "version": "0.1.0",
+  "description": "Using probe MCP for documentation search",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "probe-docs-mcp": "bin/probe-docs-mcp"
+  },
+  "files": [
+    "bin",
+    "src",
+    "data",
+    "docs-mcp.config.json"
+  ],
+  "scripts": {
+    "build": "node scripts/build.js",
+    "start": "node src/index.js"
+  },
+  "keywords": [
+    "probe",
+    "mcp",
+    "documentation",
+    "search"
+  ],
+  "author": "Leonid Bugaev",
+  "license": "MIT",
+  "dependencies": {
+    "@buger/probe": "*",
+    "@modelcontextprotocol/sdk": "^1.6.0",
+    "fs-extra": "^11.1.1",
+    "glob": "^10.3.10",
+    "minimist": "^1.2.8",
+    "simple-git": "^3.22.0"
+  }
+}
