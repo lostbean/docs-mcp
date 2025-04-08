@@ -1,6 +1,11 @@
-# Probe Docs MCP Server
+# Docs MCP Server
 
 This project provides a flexible Model Context Protocol (MCP) server, powered by [Probe](https://probeai.dev/), designed to make documentation or codebases searchable by AI assistants.
+
+You can chat with code or your docs, simply by pointing to git repo or a folder.
+```
+npx -y @buger/probe-docs-mcp@latest --gitUrl https://github.com/buger/probe
+```
 
 **Use Cases:**
 
