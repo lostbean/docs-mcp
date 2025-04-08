@@ -4,7 +4,7 @@ This project provides a flexible Model Context Protocol (MCP) server, powered by
 
 You can chat with code or your docs, simply by pointing to git repo or a folder.
 ```
-npx -y @buger/probe-docs-mcp@latest --gitUrl https://github.com/buger/probe
+npx -y @buger/docs-mcp@latest --gitUrl https://github.com/buger/probe
 ```
 
 **Use Cases:**
@@ -35,7 +35,7 @@ You can configure your MCP client to launch this server using `npx`. Here are ex
 
 **Example 1: Dynamically Searching a Git Repository (Tyk Docs)**
 
-This configuration tells the client to run the latest `@buger/probe-docs-mcp` package using `npx`, pointing it dynamically to the Tyk documentation repository. The `-y` argument automatically confirms the `npx` installation prompt. The `--toolName` and `--toolDescription` arguments customize how the search tool appears to the AI assistant.
+This configuration tells the client to run the latest `@buger/docs-mcp` package using `npx`, pointing it dynamically to the Tyk documentation repository. The `-y` argument automatically confirms the `npx` installation prompt. The `--toolName` and `--toolDescription` arguments customize how the search tool appears to the AI assistant.
 
 ```json
 {
@@ -44,7 +44,7 @@ This configuration tells the client to run the latest `@buger/probe-docs-mcp` pa
       "command": "npx",
       "args": [
         "-y",
-        "@buger/probe-docs-mcp@latest",
+        "@buger/docs-mcp@latest",
         "--gitUrl",
         "https://github.com/TykTechnologies/tyk-docs",
         "--toolName",
@@ -61,7 +61,7 @@ This configuration tells the client to run the latest `@buger/probe-docs-mcp` pa
 Alternatively, some clients might allow specifying the full command directly. You could achieve the same as Example 1 using:
 
 ```bash
-npx -y @buger/probe-docs-mcp@latest --gitUrl https://github.com/TykTechnologies/tyk-docs --toolName search_tyk_docs --toolDescription "Search Tyk API Management Documentation"
+npx -y @buger/docs-mcp@latest --gitUrl https://github.com/TykTechnologies/tyk-docs --toolName search_tyk_docs --toolDescription "Search Tyk API Management Documentation"
 ```
 
 **Example 2: Using a Pre-built, Branded MCP Server (e.g., Tyk Package)**
