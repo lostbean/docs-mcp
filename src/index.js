@@ -12,6 +12,8 @@ import fs from 'fs-extra';
 import { fileURLToPath } from 'url';
 import { search } from '@buger/probe';
 import simpleGit from 'simple-git';
+import axios from 'axios'; // Import axios
+import tar from 'tar'; // Import tar
 import { loadConfig } from './config.js';
 
 // Get the package.json to determine the version
@@ -37,8 +39,17 @@ try {
 // Load configuration
 const config = loadConfig();
 
-// Git instance for the data directory
-const git = simpleGit(config.dataDir);
+// Git instance - initialize lazily only if needed for auto-updates
+let git = null;
+
+// Ensure the data directory exists
+try {
+	fs.ensureDirSync(config.dataDir);
+	console.error(`Ensured data directory exists: ${config.dataDir}`);
+} catch (err) {
+	console.error(`Failed to ensure data directory exists: ${config.dataDir}`, err);
+	process.exit(1);
+}
 
 // Auto-update timer
 let updateTimer = null;
@@ -229,6 +240,7 @@ class DocsMcpServer {
 		}
 	}
 
+	// downloadAndExtractTarballRuntime function is already present from previous attempt
 	async run() {
 		try {
 			console.error("Starting Docs MCP server...");
@@ -242,9 +254,59 @@ class DocsMcpServer {
 				console.error(`Using static directory: ${config.includeDir}`);
 			}
 
-			// Initial check for updates if using Git
-			if (config.gitUrl && config.autoUpdateInterval > 0) {
-				await this.checkForUpdates(); // Run initial check, then schedule next
+			// Handle content source initialization
+			if (config.gitUrl) {
+				if (config.autoUpdateInterval > 0) {
+					// --- Auto-update enabled: Use Git ---
+					console.error(`Auto-update enabled. Initializing Git for ${config.dataDir}...`);
+					// Initialize git instance only when needed for updates
+					if (!git) git = simpleGit(config.dataDir);
+					const isRepo = await git.checkIsRepo();
+
+					if (!isRepo) {
+						console.error(`Directory ${config.dataDir} is not a Git repository. Attempting initial clone...`);
+						try {
+							const items = await fs.readdir(config.dataDir);
+							if (items.length > 0) {
+								console.warn(`Data directory ${config.dataDir} is not empty. Clearing before cloning.`);
+								await fs.emptyDir(config.dataDir);
+							}
+							// Use a separate simpleGit instance for the clone command itself
+							await simpleGit().clone(config.gitUrl, config.dataDir, ['--branch', config.gitRef, '--depth', '1']);
+							console.error(`Successfully cloned ${config.gitUrl} to ${config.dataDir}`);
+						} catch (cloneError) {
+							console.error(`Error during initial clone:`, cloneError);
+							process.exit(1); // Exit if initial setup fails
+						}
+					} else {
+						console.error(`Directory ${config.dataDir} is a Git repository. Proceeding with update check.`);
+						await this.checkForUpdates(); // Run initial check, then schedule next
+					}
+				} else {
+					// --- Auto-update disabled: Use Tarball Download ---
+					console.error(`Auto-update disabled. Initializing content from tarball for ${config.gitUrl}...`);
+					try {
+						await this.downloadAndExtractTarballRuntime();
+					} catch (tarballError) {
+						console.error(`Failed to initialize from tarball:`, tarballError);
+						// Exit if tarball download fails, as content won't be available
+						process.exit(1);
+					}
+					// Do not schedule updates
+					if (updateTimer) clearTimeout(updateTimer);
+					updateTimer = null; // Ensure timer is nullified
+				}
+			} else if (config.includeDir) {
+				// Static directory case - content should exist from build step or manual placement
+				console.error(`Using static content from ${config.dataDir} (originally sourced from ${config.includeDir})`);
+				// Clear any potential update timer if switching from a Git config
+				if (updateTimer) clearTimeout(updateTimer);
+				updateTimer = null;
+			} else {
+				// No content source specified at runtime - dataDir might be empty or contain pre-built content
+				console.error(`No gitUrl or includeDir specified at runtime. Using content in ${config.dataDir}.`);
+				if (updateTimer) clearTimeout(updateTimer);
+				updateTimer = null;
 			}
 
 			// Connect the server to the transport

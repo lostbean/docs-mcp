@@ -4,6 +4,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { glob } from 'glob';
 import simpleGit from 'simple-git';
+import axios from 'axios'; // Import axios
+import tar from 'tar'; // Import tar
 import { loadConfig } from '../src/config.js';
 
 // Get the directory of the current module
@@ -30,7 +32,14 @@ async function prepareDataDir() {
 	await fs.emptyDir(dataDir);
 
 	if (config.gitUrl) {
-		await cloneGitRepo();
+		// Check if we should use Git clone or download tarball
+		if (config.autoUpdateInterval > 0) {
+			console.log(`Auto-update enabled (interval: ${config.autoUpdateInterval} mins). Using git clone.`);
+			await cloneGitRepo();
+		} else {
+			console.log('Auto-update disabled. Attempting to download tarball archive.');
+			await downloadAndExtractTarball();
+		}
 	} else if (config.includeDir) {
 		await copyIncludedDir();
 	} else {
@@ -48,6 +57,7 @@ async function cloneGitRepo() {
 	const git = simpleGit();
 
 	try {
+		// Clone with depth 1 as before, but only if auto-update is enabled
 		await git.clone(config.gitUrl, dataDir, ['--branch', config.gitRef, '--depth', '1']);
 		console.log(`Successfully cloned repository to ${dataDir}`);
 	} catch (error) {
@@ -90,6 +100,61 @@ async function copyIncludedDir() {
 	} catch (error) {
 		console.error(`Error copying ${config.includeDir}:`, error);
 		throw error; // Re-throw to stop the build
+	}
+}
+
+/**
+ * Downloads and extracts a tarball archive from a Git repository URL.
+ * Assumes GitHub URL structure for archive download.
+ */
+async function downloadAndExtractTarball() {
+	// Basic parsing for GitHub URLs (can be made more robust)
+	const match = config.gitUrl.match(/github\.com\/([^/]+)\/([^/]+?)(\.git)?$/);
+	if (!match) {
+		console.error(`Cannot determine tarball URL from gitUrl: ${config.gitUrl}. Falling back to git clone.`);
+		// Fallback to clone if URL parsing fails or isn't GitHub
+		await cloneGitRepo();
+		return;
+	}
+
+	const owner = match[1];
+	const repo = match[2];
+	const ref = config.gitRef || 'main'; // Use configured ref or default to main
+	const tarballUrl = `https://github.com/${owner}/${repo}/archive/${ref}.tar.gz`;
+
+	console.log(`Attempting to download archive from ${tarballUrl} to ${dataDir}...`);
+
+	try {
+		const response = await axios({
+			method: 'get',
+			url: tarballUrl,
+			responseType: 'stream',
+		});
+
+		// Pipe the download stream directly to tar extractor
+		await new Promise((resolve, reject) => {
+			response.data
+				.pipe(
+					tar.x({
+						strip: 1, // Remove the top-level directory (e.g., repo-main/)
+						C: dataDir, // Extract to dataDir
+					})
+				)
+				.on('finish', resolve)
+				.on('error', reject);
+		});
+
+		console.log(`Successfully downloaded and extracted archive to ${dataDir}`);
+	} catch (error) {
+		console.error(`Error downloading or extracting tarball: ${error.message}`);
+		console.error('Falling back to git clone...');
+		// Fallback to clone if download/extract fails
+		try {
+			await cloneGitRepo();
+		} catch (cloneError) {
+			console.error(`Fallback git clone also failed:`, cloneError);
+			throw cloneError; // Re-throw the clone error if fallback fails
+		}
 	}
 }
 

@@ -8,7 +8,7 @@ This project provides a flexible Model Context Protocol (MCP) server, powered by
 *   **Search Your Documentation:** Integrate your project's documentation (from a local directory or Git) for easy searching.
 *   **Build Custom MCP Servers:** Use this project as a template to create your own official MCP servers tailored to specific documentation sets or even codebases.
 
-The content source (documentation or code) can be **pre-built** into the package during the `npm run build` step, or configured **dynamically** at runtime using local directories or Git repositories.
+The content source (documentation or code) can be **pre-built** into the package during the `npm run build` step, or configured **dynamically** at runtime using local directories or Git repositories. By default, when using a `gitUrl` without enabling auto-updates, the server downloads a `.tar.gz` archive for faster startup. Full Git cloning is used only when `autoUpdateInterval` is greater than 0.
 
 ## Features
 
@@ -120,9 +120,11 @@ Create a `docs-mcp.config.json` file in the root directory to define the **defau
 ### Configuration Options
 
 - `includeDir`: **(Build/Runtime)** Absolute path to a local directory whose contents will be copied to the `data` directory during build, or used directly at runtime if `dataDir` is not specified. Use this OR `gitUrl`.
-- `gitUrl`: **(Build/Runtime)** URL of the Git repository to clone into the `data` directory during build, or used directly at runtime if `dataDir` is not specified. Use this OR `includeDir`.
-- `gitRef`: **(Build/Runtime)** The branch, tag, or commit hash to checkout from the `gitUrl` (default: `main`).
-- `autoUpdateInterval`: **(Runtime)** Interval in minutes to automatically check for updates if using `gitUrl` (0 to disable, default: 5). Requires `git` command to be available.
+- `gitUrl`: **(Build/Runtime)** URL of the Git repository. Use this OR `includeDir`.
+    - If `autoUpdateInterval` is 0 (default), the server attempts to download a `.tar.gz` archive directly (currently assumes GitHub URL structure: `https://github.com/{owner}/{repo}/archive/{ref}.tar.gz`). This is faster but doesn't support updates.
+    - If `autoUpdateInterval` > 0, the server performs a `git clone` and enables periodic updates.
+- `gitRef`: **(Build/Runtime)** The branch, tag, or commit hash to use from the `gitUrl` (default: `main`). Used for both tarball download and Git clone/pull.
+- `autoUpdateInterval`: **(Runtime)** Interval in minutes to automatically check for Git updates (default: 0, meaning disabled). Setting this to a value > 0 enables Git cloning and periodic `git pull` operations. Requires the `git` command to be available in the system path.
 - `dataDir`: **(Runtime)** Path to the directory containing the content to be searched at runtime. Overrides content sourced from `includeDir` or `gitUrl` defined in the config file or built into the package. Useful for pointing the server to live data without rebuilding.
 - `toolName`: **(Build/Runtime)** The name of the MCP tool exposed by the server (default: `search_docs`). Choose a descriptive name relevant to the content.
 - `toolDescription`: **(Build/Runtime)** The description of the MCP tool shown to AI assistants (default: "Search documentation using the probe search engine.").
