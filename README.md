@@ -30,7 +30,7 @@ You can configure your MCP client to launch this server using `npx`. Here are ex
 
 **Example 1: Dynamically Searching a Git Repository (Tyk Docs)**
 
-This configuration tells the client to run the latest `@buger/probe-docs-mcp` package using `npx`, pointing it dynamically to the Tyk documentation repository.
+This configuration tells the client to run the latest `@buger/probe-docs-mcp` package using `npx`, pointing it dynamically to the Tyk documentation repository. The `-y` argument automatically confirms the `npx` installation prompt. The `--toolName` and `--toolDescription` arguments customize how the search tool appears to the AI assistant.
 
 ```json
 {
@@ -38,16 +38,16 @@ This configuration tells the client to run the latest `@buger/probe-docs-mcp` pa
     "tyk-docs-search": {
       "command": "npx",
       "args": [
-        "-y", // Automatically confirm installation
+        "-y",
         "@buger/probe-docs-mcp@latest",
         "--gitUrl",
         "https://github.com/TykTechnologies/tyk-docs",
-        "--toolName", // Custom name for the search tool
+        "--toolName",
         "search_tyk_docs",
-        "--toolDescription", // Custom description for the tool
+        "--toolDescription",
         "Search Tyk API Management Documentation"
       ],
-      "enabled": true // Ensure the server is enabled in your client
+      "enabled": true
     }
     // ... other servers
   }
@@ -62,7 +62,7 @@ npx -y @buger/probe-docs-mcp@latest --gitUrl https://github.com/TykTechnologies/
 
 **Example 2: Using a Pre-built, Branded MCP Server (e.g., Tyk Package)**
 
-If a team publishes a pre-built package containing specific documentation (like `@tyk/docs-mcp`), the configuration becomes simpler as the content source and tool details are baked into that package.
+If a team publishes a pre-built package containing specific documentation (like `@tyk/docs-mcp`), the configuration becomes simpler as the content source and tool details are baked into that package. The `-y` argument is still recommended for `npx`.
 
 ```json
 {
@@ -71,7 +71,7 @@ If a team publishes a pre-built package containing specific documentation (like 
       "command": "npx",
       "args": [
         "-y",
-        "@tyk/docs-mcp@latest" // Use the specific branded package
+        "@tyk/docs-mcp@latest"
       ],
       "enabled": true
     }
