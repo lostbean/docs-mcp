@@ -126,7 +126,7 @@ async function build() {
 		await prepareDataDir();
 
 		// Make the bin script executable
-		const binPath = path.join(rootDir, 'bin', 'probe-docs-mcp');
+		const binPath = path.join(rootDir, 'bin', 'mcp');
 		await fs.chmod(binPath, 0o755);
 		console.log(`Made bin script executable: ${binPath}`);
 	} catch (error) {

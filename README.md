@@ -20,16 +20,67 @@ The content source (documentation or code) can be **pre-built** into the package
 - **Customizable MCP Tool:** Define the name and description of the search tool exposed to AI assistants.
 - **AI Integration:** Seamlessly integrates with AI assistants supporting the Model Context Protocol (MCP).
 
-## Installation
+## Usage
+
+The primary way to use this server is via `npx`, which downloads and runs the package without needing a local installation. This makes it easy to integrate with AI assistants and MCP clients (like IDE extensions).
+
+### Integrating with MCP Clients (e.g., IDEs)
+
+You can configure your MCP client to launch this server using `npx`. Here are examples of how you might configure a client (syntax may vary based on the specific client):
+
+**Example 1: Dynamically Searching a Git Repository (Tyk Docs)**
+
+This configuration tells the client to run the latest `@buger/probe-docs-mcp` package using `npx`, pointing it dynamically to the Tyk documentation repository.
+
+```json
+{
+  "mcpServers": {
+    "tyk-docs-search": {
+      "command": "npx",
+      "args": [
+        "-y", // Automatically confirm installation
+        "@buger/probe-docs-mcp@latest",
+        "--gitUrl",
+        "https://github.com/TykTechnologies/tyk-docs",
+        "--toolName", // Custom name for the search tool
+        "search_tyk_docs",
+        "--toolDescription", // Custom description for the tool
+        "Search Tyk API Management Documentation"
+      ],
+      "enabled": true // Ensure the server is enabled in your client
+    }
+    // ... other servers
+  }
+}
+```
+
+Alternatively, some clients might allow specifying the full command directly. You could achieve the same as Example 1 using:
 
 ```bash
-# Clone the repository
-git clone https://github.com/buger/probe.git
-cd probe/examples/docs-mcp
-
-# Install dependencies
-npm install
+npx -y @buger/probe-docs-mcp@latest --gitUrl https://github.com/TykTechnologies/tyk-docs --toolName search_tyk_docs --toolDescription "Search Tyk API Management Documentation"
 ```
+
+**Example 2: Using a Pre-built, Branded MCP Server (e.g., Tyk Package)**
+
+If a team publishes a pre-built package containing specific documentation (like `@tyk/docs-mcp`), the configuration becomes simpler as the content source and tool details are baked into that package.
+
+```json
+{
+  "mcpServers": {
+    "tyk-official-docs": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@tyk/docs-mcp@latest" // Use the specific branded package
+      ],
+      "enabled": true
+    }
+    // ... other servers
+  }
+}
+```
+
+This approach is ideal for distributing standardized search experiences for official documentation or codebases. See the "Creating Your Own Pre-built MCP Server" section below.
 
 ## Configuration
 
@@ -39,10 +90,10 @@ Create a `docs-mcp.config.json` file in the root directory to define the **defau
 
 ```json
 {
-  "includeDir": "/Users/username/projects/my-project/docs", // Path to your local documentation folder
-  "toolName": "search_my_project_docs", // Custom tool name for AI assistants
-  "toolDescription": "Search the documentation for My Project.", // Custom tool description
-  "ignorePatterns": [ // Optional: Patterns to exclude when copying
+  "includeDir": "/Users/username/projects/my-project/docs",
+  "toolName": "search_my_project_docs",
+  "toolDescription": "Search the documentation for My Project.",
+  "ignorePatterns": [
     "node_modules",
     ".git",
     "build",
@@ -55,12 +106,12 @@ Create a `docs-mcp.config.json` file in the root directory to define the **defau
 
 ```json
 {
-  "gitUrl": "https://github.com/your-org/your-codebase.git", // URL of the repository to search
-  "gitRef": "develop", // Optional: Specify a branch or tag (default: main)
-  "autoUpdateInterval": 15, // Optional: Check for updates every 15 minutes (0 to disable, default: 5)
-  "toolName": "search_codebase", // Custom tool name
-  "toolDescription": "Search the main company codebase.", // Custom tool description
-  "ignorePatterns": [ // Optional: Patterns to ignore during search indexing (applied after clone)
+  "gitUrl": "https://github.com/your-org/your-codebase.git",
+  "gitRef": "develop",
+  "autoUpdateInterval": 15,
+  "toolName": "search_codebase",
+  "toolDescription": "Search the main company codebase.",
+  "ignorePatterns": [
     "*.test.js",
     "dist/",
     "__snapshots__"
@@ -89,73 +140,19 @@ Create a `docs-mcp.config.json` file in the root directory to define the **defau
 
 Note: If both `includeDir` and `gitUrl` are provided in the *same* configuration source (e.g., both in the config file, or both as CLI args), `gitUrl` takes precedence.
 
-## Building (Pre-building Content)
+## Creating Your Own Pre-built MCP Server
 
-Build the package to prepare the `data` directory based on the configuration in `docs-mcp.config.json`:
+You can use this project as a template to create and publish your own npm package with documentation or code pre-built into it. This provides a zero-configuration experience for users (like Example 2 above).
 
-```bash
-npm run build
-```
+1.  **Fork/Clone this Repository:** Start with this project's code.
+2.  **Configure `docs-mcp.config.json`:** Define the `includeDir` or `gitUrl` pointing to your content source. Set the default `toolName` and `toolDescription`.
+3.  **Update `package.json`:** Change the `name` (e.g., `@my-org/my-docs-mcp`), `version`, `description`, etc.
+4.  **Build:** Run `npm run build`. This clones/copies your content into the `data` directory and makes the package ready.
+5.  **Publish:** Run `npm publish` (you'll need npm authentication configured).
 
-This will:
-1. Create a default configuration file if it doesn't exist.
-2. If `gitUrl` is set, clone the repository to the `data` directory.
-3. If `includeDir` is set, copy the directory to `data` (respecting .gitignore).
-4. Make the executable script executable.
-5. The `data` directory is now **pre-built** and will be included if you publish the package.
+Now, users can run your specific documentation server easily: `npx @my-org/my-docs-mcp@latest`.
 
-## Running
-
-Start the MCP server. It will use the pre-built `data` directory and configured tool details by default.
-
-```bash
-npm start
-```
-
-Or use the executable directly:
-
-```bash
-./bin/probe-docs-mcp
-```
-
-### Dynamic Configuration at Runtime
-
-You can override the default configuration when running the server:
-
-```bash
-# Run using a specific Git repo branch and custom tool name
-npm start -- --gitUrl=https://github.com/some-org/some-repo.git --gitRef=feature/new-api --toolName=search_api_preview
-
-# Run using a specific local directory at runtime (overrides built-in data)
-npm start -- --dataDir=/Users/username/work/current-project/docs --toolName=search_current_project
-
-# Equivalent using the executable directly
-./bin/probe-docs-mcp --dataDir=/Users/username/work/current-project/docs --toolName=search_current_project
-```
-
-If using a Git repository with `autoUpdateInterval > 0`, the server will automatically check for updates for the specified `dataDir`.
-
-## Environment Variables
-
-You can also configure the server using environment variables:
-
-- `INCLUDE_DIR`: Corresponds to `includeDir` config/CLI option. Primarily affects build.
-- `GIT_URL`: Corresponds to `gitUrl` config/CLI option.
-- `GIT_REF`: Corresponds to `gitRef` config/CLI option.
-- `AUTO_UPDATE_INTERVAL`: Corresponds to `autoUpdateInterval` config/CLI option.
-- `DATA_DIR`: Corresponds to `dataDir` CLI option (runtime only).
-- `TOOL_NAME`: Corresponds to `toolName` config/CLI option.
-- `TOOL_DESCRIPTION`: Corresponds to `toolDescription` config/CLI option.
-
-Example:
-
-```bash
-# Run pointing to a specific runtime data directory and custom tool name
-DATA_DIR=/mnt/shared/live-docs TOOL_NAME=search_live_shared_docs npm start
-
-# Run using a different Git repo, disable updates
-GIT_URL=https://github.com/another-org/another-repo.git AUTO_UPDATE_INTERVAL=0 npm start
-```
+*(The previous "Running", "Dynamic Configuration at Runtime", and "Environment Variables" sections have been removed as `npx` usage with arguments within client configurations is now the primary documented method.)*
 
 ## Using with AI Assistants
 
@@ -165,49 +162,31 @@ This MCP server exposes a search tool to connected AI assistants via the Model C
 
 - `query`: A natural language query or keywords describing what to search for (e.g., "how to configure the gateway", "database connection example", "user authentication"). The server uses Probe's search capabilities to find relevant content. (Required)
 
-**Example Tool Call (using default tool name):**
+**Example Tool Call (using `search_tyk_docs` from Usage Example 1):**
 
 ```json
 {
-  "tool_name": "search_docs", // Or your custom tool name
+  "tool_name": "search_tyk_docs",
   "arguments": {
-    "query": "how to set up database connection pooling"
+    "query": "gateway rate limiting"
   }
 }
 ```
 
-**Example Tool Call (using custom tool name `search_codebase`):**
+**Example Tool Call (using the tool from the `@tyk/docs-mcp` package):**
+
+Assuming the pre-built package `@tyk/docs-mcp` defined its tool name as `search_tyk_official_docs`:
 
 ```json
 {
-  "tool_name": "search_codebase",
+  "tool_name": "search_tyk_official_docs",
   "arguments": {
-    "query": "find the implementation of the user login function"
+    "query": "dashboard api access"
   }
 }
 ```
 
-## Publishing as an npm Package
-
-To publish this as an npm package with pre-built documentation:
-
-1. Configure `docs-mcp.config.json` with the desired default source and tool details.
-2. Build the package: `npm run build` (This populates the `data` directory).
-3. Update the `package.json` with your package name and version.
-4. Publish to npm: `npm publish` (The `data` directory will be included).
-
-After publishing, users can install and use your package:
-
-```bash
-# Install the package
-npm install -g your-package-name
-
-# Run using the pre-built data and default tool name
-your-package-name
-
-# Run using a different Git repo dynamically and custom tool name
-your-package-name --gitUrl=https://github.com/your-org/your-docs-repo.git --toolName=search_custom
-```
+*(The previous "Publishing as an npm Package" section has been replaced by the "Creating Your Own Pre-built MCP Server" section above.)*
 
 ## License
 

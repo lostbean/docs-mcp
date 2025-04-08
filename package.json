@@ -1,11 +1,11 @@
 {
-  "name": "@buger/probe-docs-mcp",
+  "name": "@buger/docs-mcp",
   "version": "0.1.0",
   "description": "Using probe MCP for documentation search",
   "type": "module",
   "main": "src/index.js",
   "bin": {
-    "probe-docs-mcp": "bin/probe-docs-mcp"
+    "mcp": "bin/mcp"
   },
   "files": [
     "bin",
