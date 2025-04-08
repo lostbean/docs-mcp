@@ -85,6 +85,8 @@ If a team publishes a pre-built package containing specific documentation (like 
 
 This approach is ideal for distributing standardized search experiences for official documentation or codebases. See the "Creating Your Own Pre-built MCP Server" section below.
 
+Here is example on how Tyk team have build own documentation MCP server https://github.com/TykTechnologies/docs-mcp. 
+
 ## Configuration
 
 Create a `docs-mcp.config.json` file in the root directory to define the **default** content source and MCP tool details used during the build and at runtime (unless overridden by CLI arguments or environment variables).
