@@ -49,7 +49,6 @@ This configuration tells the client to run the latest `@buger/probe-docs-mcp` pa
       ],
       "enabled": true
     }
-    // ... other servers
   }
 }
 ```
@@ -75,7 +74,6 @@ If a team publishes a pre-built package containing specific documentation (like 
       ],
       "enabled": true
     }
-    // ... other servers
   }
 }
 ```
