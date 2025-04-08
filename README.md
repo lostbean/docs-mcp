@@ -66,7 +66,7 @@ npx -y @buger/probe-docs-mcp@latest --gitUrl https://github.com/TykTechnologies/
 
 **Example 2: Using a Pre-built, Branded MCP Server (e.g., Tyk Package)**
 
-If a team publishes a pre-built package containing specific documentation (like `@tyk/docs-mcp`), the configuration becomes simpler as the content source and tool details are baked into that package. The `-y` argument is still recommended for `npx`.
+If a team publishes a pre-built package containing specific documentation (like `@tyk-technologies/docs-mcp`), the configuration becomes simpler as the content source and tool details are baked into that package. The `-y` argument is still recommended for `npx`.
 
 ```json
 {
@@ -75,7 +75,7 @@ If a team publishes a pre-built package containing specific documentation (like 
       "command": "npx",
       "args": [
         "-y",
-        "@tyk/docs-mcp@latest"
+        "@tyk-technologies/docs-mcp@latest"
       ],
       "enabled": true
     }
