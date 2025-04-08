@@ -159,6 +159,7 @@ This MCP server exposes a search tool to connected AI assistants via the Model C
 **Tool Parameters:**
 
 - `query`: A natural language query or keywords describing what to search for (e.g., "how to configure the gateway", "database connection example", "user authentication"). The server uses Probe's search capabilities to find relevant content. (Required)
+- `page`: The page number for results when dealing with many matches. Defaults to 1 if omitted. (Optional)
 
 **Example Tool Call (using `search_tyk_docs` from Usage Example 1):**
 
@@ -166,7 +167,8 @@ This MCP server exposes a search tool to connected AI assistants via the Model C
 {
   "tool_name": "search_tyk_docs",
   "arguments": {
-    "query": "gateway rate limiting"
+    "query": "gateway rate limiting",
+    "page": 1 // Requesting the first page
   }
 }
 ```
@@ -179,7 +181,8 @@ Assuming the pre-built package `@tyk/docs-mcp` defined its tool name as `search_
 {
   "tool_name": "search_tyk_official_docs",
   "arguments": {
-    "query": "dashboard api access"
+    "query": "dashboard api access",
+    "page": 2 // Requesting the second page
   }
 }
 ```

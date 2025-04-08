@@ -94,9 +94,13 @@ class DocsMcpServer {
 								type: 'string',
 								description: 'Elasticsearch query string. Focus on keywords and use ES syntax (e.g., "install AND guide", "configure OR setup", "api NOT internal").',
 							},
-							// Removed filesOnly, maxResults, session
+							page: {
+								type: 'number',
+								description: 'Optional page number for pagination of results (e.g., 1, 2, 3...). Default is 1.',
+								default: 1, // Set a default value
+							}
 						},
-						required: ['query']
+						required: ['query'] // 'page' is optional
 					},
 				},
 			],
