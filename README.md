@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/buger-docs-mcp-badge.png)](https://mseep.ai/app/buger-docs-mcp)
+
 # Docs MCP Server
 [![smithery badge](https://smithery.ai/badge/@buger/docs-mcp)](https://smithery.ai/server/@buger/docs-mcp)
 
